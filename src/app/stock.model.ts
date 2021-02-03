@@ -2,7 +2,9 @@ export class Stock {
     date: Date;
     closeLast: number; //rename?
     volume: number;
-    open: string;
+    open: number;
     high: number;
     low: number;
+    priceChange?: number; // StockPriceChange
+    smaPriceChangePercentage?: number;
 }

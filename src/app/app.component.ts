@@ -9,24 +9,25 @@ import { StockService } from './stock.service';
 })
 export class AppComponent {
   title = 'scrooge-stocks';
-  // header = new Array<string>();
+
   stocks = new Array<Stock>();
-  stocksFilteredSorted = new Array<Stock>();
+  stocksFiltered = new Array<Stock>();
   stocksPriceChange = new Array<Stock>();
   stocksBestOpening = new Array<Stock>();
   longestUpwardDays: number;
 
-  from: Date = new Date("1/6/2021");
-  to: Date = new Date("1/8/2021");
+  from: Date;
+  to: Date;
 
   constructor(private stockService: StockService) { }
 
   ngOnInit() {
     this.stockService.getStocks()
-      .subscribe(data => this.parseStocks(data))
+      .subscribe(data => this.initData(data))
   }
 
-  parseStocks(data) {
+  initData(data: string): void {
+    // parse stock data from csv string
     data.split("\n").forEach(e => {
       let row = e.split(",");
       // TODO skip header and empty rows
@@ -34,87 +35,121 @@ export class AppComponent {
         //new Stock(
         //TODO make sure order is correct
         this.stocks.push({
-          date: row[0],
-          closeLast: parseFloat(row[1].trim().replace("$", "")),
-          volume: row[2],
-          open: row[3],
-          high: parseFloat(row[4].trim().replace("$", "")),
-          low: parseFloat(row[5].trim().replace("$", "")),
+          date: new Date(row[0]),
+          closeLast: this.getPrice(row[1]),
+          volume: parseInt(row[2]),
+          open: this.getPrice(row[3]),
+          high: this.getPrice(row[4]),
+          low: this.getPrice(row[5]),
         })
       }
     });
 
+    // initialize date range to last 30 days
+    // this.from = new Date("1/6/2021");
+    // this.to = new Date("1/8/2021");
+    this.from = new Date();
+    this.to = new Date();
+    this.from.setDate(this.from.getDate() - 30)
+
+    // set data on initial date range
     this.handleDateRangeChange();
   }
 
-  handleDateRangeChange() {
+  handleDateRangeChange(): void {
     // filter and sort data by user inputted date range
-    this.stocksFilteredSorted = this.sortByDate(this.filterByDate(this.stocks))
+    this.stocksFiltered = this.filterByDate(this.stocks);
 
-    // handle answers for questions
-    this.getLongestUpwardDays()
-    this.stocksPriceChange = this.getStockPriceChange()
-    this.stocksBestOpening = this.getBestOpeningPrice()
+    // get answers for questions
+    this.longestUpwardDays = this.getLongestUpwardDays();
+    this.stocksPriceChange = this.getStockPriceChange();
+    this.stocksBestOpening = this.getBestOpeningPrice();
   }
 
-  getLongestUpwardDays() {
+  getLongestUpwardDays(): number {
     let maxDays = 0;
+    let stocksSorted = this.sortByDateAscending(this.stocksFiltered);
 
     // TODO remove repetition
-    for (let i = 0; i < this.stocksFilteredSorted.length; i++) {
-      let index = i + 1;
-      let price = this.stocksFilteredSorted[i].closeLast; //TODO check always start price oooor?
+    for (let i = 0; i < stocksSorted.length; i++) {
+      let nextDayIndex = i + 1;
+      let prevDayPrice = stocksSorted[i].closeLast;
       let days = 1;
 
-      while (index < this.stocksFilteredSorted.length && price < this.stocksFilteredSorted[index].closeLast) {
+      while (nextDayIndex < stocksSorted.length && prevDayPrice < stocksSorted[nextDayIndex].closeLast) {
+        // TODO scen. price 1st day: 12, 2nd day: 15, 3rd: 14 -> updward trend is 2 days?
+        prevDayPrice = stocksSorted[nextDayIndex].closeLast;
         days++;
-        index++;
+        nextDayIndex++;
       }
 
       maxDays = days > maxDays ? days : maxDays;
     }
 
-    this.longestUpwardDays = maxDays
+    return maxDays;
   }
 
-  getStockPriceChange() {
-    //TODO use model maybe
-    let result = [];
+  getStockPriceChange(): Stock[] {
+    let result = new Array<Stock>();
 
-    for (let s of this.stocksFilteredSorted) {
-      //Use High and Low prices to calculate the stock price change within a day. (Stock
-      // price change from 2$ to 1$ is equally significant as change from 1$ to 2$.)
-      result.push({ date: s.date, volume: s.volume, priceChange: s.high - s.low });
+    for (let s of this.stocksFiltered) {
+      // calculate the stock price change within a day
+      s.priceChange = s.high - s.low;
+      result.push(s)
     }
 
-    return result;
-    //List of dates, volumes and price changes.
-  }
+    // The list is ordered by
+    // volume and price change. So if two dates have the same volume, the one with the
+    // more significant price change should come first.
 
-  getBestOpeningPrice() {
-    //TODO
-    let result = [];
-    //Calculate simple moving average for day N using the average value of closing prices
-    // between days N-1 to N-5.
-    for (let s of this.stocksFilteredSorted) {
-      // Calculate how many percentages (%) is the difference between the opening price of
-      // the day and the calculated SMA 5 price of the day.
-      result.push({ date: s.date, priceChangePercentage: 0.5 });
-    }
-    // output: List of dates and price change percentages. The list is ordered by
-    // price change percentages.
-    console.log(result)
+    //TODO sort
     return result;
   }
 
-  filterByDate(data: Stock[]) {
+  getBestOpeningPrice(): Stock[] {
+    let result = new Array<Stock>();
+    const days = 5;
+
+    for (let s of this.stocksFiltered) {
+      let n = this.stocks.indexOf(s); // index of current day
+      // order of stocks is descending -> get closing prices of next 5 items of current day
+      let A = this.stocks.slice(n + 1, n + (days + 1)).map(s => s.closeLast);
+
+      // calculate sma and difference between opening price and sma
+      if (A.length == days) {
+        let sma = A.reduce((a, b) => a + b) / days;
+        let priceChangePercentage = (s.open - sma) / s.open;
+        s.smaPriceChangePercentage = priceChangePercentage;
+        result.push(s);
+      }
+    }
+
+    // sort by price change percentage
+    return result.sort((a, b) => { return b.smaPriceChangePercentage - a.smaPriceChangePercentage });
+  }
+
+
+  // TODO helper service
+  
+  // filter by given date range
+  filterByDate(data: Stock[]): Stock[] {
+    //TODO these times are +1 when selected from the datepicker
+    // console.log(new Date(this.from))
+    // console.log(new Date(this.to))
     return data.filter(s => {
       return new Date(s.date) >= new Date(this.from)
         && new Date(s.date) <= new Date(this.to)
     });
   }
 
-  sortByDate(data: Stock[]) {
-    return data.sort((a, b) => { return new Date(a.date).getTime() - new Date(b.date).getTime() })
+  sortByDateAscending(data: Stock[]): Stock[] {
+    return data.sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime()
+    })
+  }
+
+  // convert price from string to float
+  getPrice(price: string): number {
+    return parseFloat(price.trim().replace("$", ""));
   }
 }

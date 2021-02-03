@@ -9,9 +9,10 @@
 <button (click)="handleDateRangeChange()">OK</button>
 
 <!--Results-->
+<!--TODO poista-->
 <div *ngIf="false">
   <div *ngFor="let stock of stocks">
-    {{stock.date}}
+    {{stock.date | date}}
     {{stock.closeLast}}
     {{stock.volume}}
     {{stock.open}}
@@ -29,7 +30,7 @@
   Which dates within a given date range had a) the highest trading volume and b) the most
   significant stock price change within a day?
   <div *ngFor="let r of stocksPriceChange">
-    {{r.date}}
+    {{r.date | date}}
     {{r.volume}}
     {{r.priceChange}}
   </div>
@@ -39,7 +40,7 @@
   Within a given date range, which dates had the best opening price compared to 5 days
   simple moving average (SMA 5)?
   <div *ngFor="let r of stocksBestOpening">
-    {{r.date}}
-    {{r.priceChangePercentage}}
+    {{r.date | date}}
+    {{r.smaPriceChangePercentage | percent}}
   </div>
 </div>
