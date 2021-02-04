@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { Stock } from './stock.model';
-import { StockService } from './stock.service';
+import { Stock } from './models/stock.model';
+import { HelperService } from './services/helper.service';
+import { StockService } from './services/stock.service';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,7 @@ export class AppComponent {
   from: Date;
   to: Date;
 
-  constructor(private stockService: StockService) { }
+  constructor(private stockService: StockService, private helperService: HelperService) { }
 
   ngOnInit() {
     this.stockService.getStocks()
@@ -33,14 +34,13 @@ export class AppComponent {
       // TODO skip header and empty rows
       if (e) {
         //new Stock(
-        //TODO make sure order is correct
         this.stocks.push({
           date: new Date(row[0]),
-          closeLast: this.getPrice(row[1]),
+          closeLast: this.helperService.getPrice(row[1]),
           volume: parseInt(row[2]),
-          open: this.getPrice(row[3]),
-          high: this.getPrice(row[4]),
-          low: this.getPrice(row[5]),
+          open: this.helperService.getPrice(row[3]),
+          high: this.helperService.getPrice(row[4]),
+          low: this.helperService.getPrice(row[5]),
         })
       }
     });
@@ -58,7 +58,7 @@ export class AppComponent {
 
   handleDateRangeChange(): void {
     // filter and sort data by user inputted date range
-    this.stocksFiltered = this.filterByDate(this.stocks);
+    this.stocksFiltered = this.helperService.filterByDate(this.stocks, this.from, this.to);
 
     // get answers for questions
     this.longestUpwardDays = this.getLongestUpwardDays();
@@ -68,7 +68,7 @@ export class AppComponent {
 
   getLongestUpwardDays(): number {
     let maxDays = 0;
-    let stocksSorted = this.sortByDateAscending(this.stocksFiltered);
+    let stocksSorted = this.helperService.sortByDateAscending(this.stocksFiltered);
 
     // TODO remove repetition
     for (let i = 0; i < stocksSorted.length; i++) {
@@ -102,7 +102,8 @@ export class AppComponent {
     // volume and price change. So if two dates have the same volume, the one with the
     // more significant price change should come first.
 
-    //TODO sort
+    // sort by volume and price change, prioritizing volume
+    result.sort((a, b) => { return a.volume - b.volume || a.priceChange - b.priceChange; });
     return result;
   }
 
@@ -130,26 +131,26 @@ export class AppComponent {
 
 
   // TODO helper service
-  
-  // filter by given date range
-  filterByDate(data: Stock[]): Stock[] {
-    //TODO these times are +1 when selected from the datepicker
-    // console.log(new Date(this.from))
-    // console.log(new Date(this.to))
-    return data.filter(s => {
-      return new Date(s.date) >= new Date(this.from)
-        && new Date(s.date) <= new Date(this.to)
-    });
-  }
 
-  sortByDateAscending(data: Stock[]): Stock[] {
-    return data.sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime()
-    })
-  }
+  // // filter by given date range
+  // filterByDate(data: Stock[]): Stock[] {
+  //   //TODO these times are +1 when selected from the datepicker
+  //   // console.log(new Date(this.from))
+  //   // console.log(new Date(this.to))
+  //   return data.filter(s => {
+  //     return new Date(s.date) >= new Date(this.from)
+  //       && new Date(s.date) <= new Date(this.to)
+  //   });
+  // }
 
-  // convert price from string to float
-  getPrice(price: string): number {
-    return parseFloat(price.trim().replace("$", ""));
-  }
+  // sortByDateAscending(data: Stock[]): Stock[] {
+  //   return data.sort((a, b) => {
+  //     return new Date(a.date).getTime() - new Date(b.date).getTime()
+  //   })
+  // }
+
+  // // convert price from string to float
+  // getPrice(price: string): number {
+  //   return parseFloat(price.trim().replace("$", ""));
+  // }
 }

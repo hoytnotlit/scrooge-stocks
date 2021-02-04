@@ -1,8 +1,0 @@
-{
-    "/api/*": {
-        "target": "https://www.nasdaq.com",
-        "secure": false,
-        "logLevel": "debug",
-        "changeOrigin": true
-    }
-}
