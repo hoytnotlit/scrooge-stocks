@@ -1,3 +1,5 @@
+<h1>Scrooge McDuck's stock price statistics</h1>
+
 <!--User input-->
 <div>Pick a date range</div>
 
@@ -9,17 +11,7 @@
 <button (click)="handleDateRangeChange()">OK</button>
 
 <!--Results-->
-<!--TODO poista-->
-<div *ngIf="false">
-  <div *ngFor="let stock of stocks">
-    {{stock.date | date}}
-    {{stock.closeLast}}
-    {{stock.volume}}
-    {{stock.open}}
-    {{stock.high}}
-    {{stock.low}}
-  </div>
-</div>
+<app-stock></app-stock>
 
 <div class="row">
   How many days was the longest bullish (upward) trend within a given date range?

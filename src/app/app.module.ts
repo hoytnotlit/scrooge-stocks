@@ -4,10 +4,12 @@ import { HttpClientModule } from '@angular/common/http'; //TODO remove
 import { FormsModule } from '@angular/forms'; 
 
 import { AppComponent } from './app.component';
+import { StockComponent } from './components/stock/stock.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    StockComponent
   ],
   imports: [
     BrowserModule,
