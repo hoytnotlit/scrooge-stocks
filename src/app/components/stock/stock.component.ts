@@ -1,27 +1,22 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Stock } from 'src/app/models/stock.model';
-import { HelperService } from 'src/app/services/helper.service';
 
+/**
+ * Component for stock statistics
+ */
 @Component({
   selector: 'app-stock',
   templateUrl: './stock.component.html',
   styleUrls: ['./stock.component.less']
 })
-export class StockComponent implements OnInit {
-
+export class StockComponent implements OnChanges {
   @Input() stocks: Stock[];
   @Input() stocksFiltered: Stock[];
   stocksPriceChange = new Array<Stock>();
   stocksBestOpening = new Array<Stock>();
   longestUpwardDays: number;
 
-  from: Date;
-  to: Date;
-
-  constructor(private helperService: HelperService) { }
-
-  ngOnInit() {
-  }
+  constructor() { }
 
   ngOnChanges() {
     this.longestUpwardDays = this.getLongestUpwardDays();
@@ -31,17 +26,16 @@ export class StockComponent implements OnInit {
 
   getLongestUpwardDays(): number {
     let maxDays = 0;
-    let stocksSorted = this.helperService.sortByDateAscending(this.stocksFiltered);
+    let stocksReversed = this.stocksFiltered.reverse();
 
-    // TODO remove repetition
-    for (let i = 0; i < stocksSorted.length; i++) {
+    for (let i = 0; i < stocksReversed.length; i++) {
       let nextDayIndex = i + 1;
-      let prevDayPrice = stocksSorted[i].closeLast;
+      let prevDayPrice = stocksReversed[i].closeLast;
       let days = 1;
 
-      while (nextDayIndex < stocksSorted.length && prevDayPrice < stocksSorted[nextDayIndex].closeLast) {
-        // TODO scen. price 1st day: 12, 2nd day: 15, 3rd: 14 -> updward trend is 2 days?
-        prevDayPrice = stocksSorted[nextDayIndex].closeLast;
+      // get count of how many days stock price was going up
+      while (nextDayIndex < stocksReversed.length && prevDayPrice < stocksReversed[nextDayIndex].closeLast) {
+        prevDayPrice = stocksReversed[nextDayIndex].closeLast; // compare price to previous day
         days++;
         nextDayIndex++;
       }
@@ -61,12 +55,8 @@ export class StockComponent implements OnInit {
       result.push(s)
     }
 
-    // The list is ordered by
-    // volume and price change. So if two dates have the same volume, the one with the
-    // more significant price change should come first.
-
-    // sort by volume and price change, prioritizing volume
-    result.sort((a, b) => { return a.volume - b.volume || a.priceChange - b.priceChange; });
+    // sort by volume and price change
+    result.sort((a, b) => { return b.volume - a.volume || b.priceChange - a.priceChange; });
     return result;
   }
 
@@ -80,7 +70,7 @@ export class StockComponent implements OnInit {
       let A = this.stocks.slice(n + 1, n + (days + 1)).map(s => s.closeLast);
 
       // calculate sma and difference between opening price and sma
-      if (A.length == days) {
+      if (A.length === days) {
         let sma = A.reduce((a, b) => a + b) / days;
         let priceChangePercentage = (s.open - sma) / s.open;
         s.smaPriceChangePercentage = priceChangePercentage;

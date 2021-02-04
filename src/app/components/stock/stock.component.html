@@ -1,23 +1,32 @@
-<div class="row">
+<div class="container">
     How many days was the longest bullish (upward) trend within a given date range?
-    {{longestUpwardDays}} days
+    <div>{{longestUpwardDays}} days</div>
 </div>
 
-<div class="row">
+<div class="container">
     Which dates within a given date range had a) the highest trading volume and b) the most
     significant stock price change within a day?
-    <div *ngFor="let r of stocksPriceChange">
-        {{r.date | date}}
-        {{r.volume}}
-        {{r.priceChange}}
+    <div class="row header">
+        <div>Date</div>
+        <div>Volume</div>
+        <div>Price change</div>
+    </div>
+    <div class="row" *ngFor="let r of stocksPriceChange">
+        <div>{{r.date | date}}</div>
+        <div>{{r.volume}}</div>
+        <div>{{r.priceChange | currency:"USD"}}</div>
     </div>
 </div>
 
-<div class="row">
+<div class="container">
     Within a given date range, which dates had the best opening price compared to 5 days
     simple moving average (SMA 5)?
-    <div *ngFor="let r of stocksBestOpening">
-        {{r.date | date}}
-        {{r.smaPriceChangePercentage | percent}}
+    <div class="row header">
+        <div>Date</div>
+        <div>Price change percentage</div>
+    </div>
+    <div class="row" *ngFor="let r of stocksBestOpening">
+        <div>{{r.date | date}}</div>
+        <div>{{r.smaPriceChangePercentage | percent}}</div>
     </div>
 </div>

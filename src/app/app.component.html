@@ -1,38 +1,16 @@
-<h1>Scrooge McDuck's stock price statistics</h1>
+<div class="main-container">
+  <h1>Scrooge McDuck's stock price statistics</h1>
 
-<!--User input-->
-<div>Pick a date range</div>
+  <!--User input-->
+  <div>Pick a date range</div>
 
-<label>From</label>
-<input type="date" id="from" name="from" [(ngModel)]="from" />
-<label>To</label>
-<input type="date" id="to" name="to" [(ngModel)]="to" />
+  <label>From</label>
+  <input type="date" id="from" name="from" [(ngModel)]="fromDisplay" />
+  <label>To</label>
+  <input type="date" id="to" name="to" [(ngModel)]="toDisplay" />
 
-<button (click)="handleDateRangeChange()">OK</button>
+  <button (click)="handleDateRangeChange()">OK</button>
 
-<!--Results-->
-<app-stock [stocks]="stocks" [stocksFiltered]="stocksFiltered"></app-stock>
-<!-- 
-<div class="row">
-  How many days was the longest bullish (upward) trend within a given date range?
-  {{longestUpwardDays}} days
+  <!--Results-->
+  <app-stock [stocks]="stocks" [stocksFiltered]="stocksFiltered"></app-stock>
 </div>
-
-<div class="row">
-  Which dates within a given date range had a) the highest trading volume and b) the most
-  significant stock price change within a day?
-  <div *ngFor="let r of stocksPriceChange">
-    {{r.date | date}}
-    {{r.volume}}
-    {{r.priceChange}}
-  </div>
-</div>
-
-<div class="row">
-  Within a given date range, which dates had the best opening price compared to 5 days
-  simple moving average (SMA 5)?
-  <div *ngFor="let r of stocksBestOpening">
-    {{r.date | date}}
-    {{r.smaPriceChangePercentage | percent}}
-  </div>
-</div> -->
