@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Stock } from './models/stock.model';
 import { HelperService } from './services/helper.service';
 import { StockService } from './services/stock.service';
@@ -11,7 +11,7 @@ import { StockService } from './services/stock.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.less']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   stocks = new Array<Stock>();
   stocksFiltered = new Array<Stock>();
   from: Date;
@@ -23,24 +23,24 @@ export class AppComponent {
 
   ngOnInit() {
     this.stockService.getStocks()
-      .subscribe(data => this.initData(data))
+      .subscribe(data => this.initData(data));
   }
 
   initData(data: string): void {
     // parse stock data from csv string
-    data.split("\n").forEach((e, i) => {
-      let row = e.split(",");
+    data.split('\n').forEach((e, i) => {
+      const row = e.split(',');
 
       // skip header and empty row
       if (e && i !== 0) {
         this.stocks.push({
           date: new Date(row[0]),
           closeLast: this.helperService.getPrice(row[1]),
-          volume: parseInt(row[2]),
+          volume: parseInt(row[2], 10),
           open: this.helperService.getPrice(row[3]),
           high: this.helperService.getPrice(row[4]),
           low: this.helperService.getPrice(row[5]),
-        })
+        });
       }
     });
 

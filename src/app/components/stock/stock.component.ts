@@ -26,7 +26,7 @@ export class StockComponent implements OnChanges {
 
   getLongestUpwardDays(): number {
     let maxDays = 0;
-    let stocksReversed = this.stocksFiltered.reverse();
+    const stocksReversed = this.stocksFiltered.reverse();
 
     for (let i = 0; i < stocksReversed.length; i++) {
       let nextDayIndex = i + 1;
@@ -47,39 +47,39 @@ export class StockComponent implements OnChanges {
   }
 
   getStockPriceChange(): Stock[] {
-    let result = new Array<Stock>();
+    const result = new Array<Stock>();
 
-    for (let s of this.stocksFiltered) {
+    for (const s of this.stocksFiltered) {
       // calculate the stock price change within a day
       s.priceChange = s.high - s.low;
-      result.push(s)
+      result.push(s);
     }
 
     // sort by volume and price change
-    result.sort((a, b) => { return b.volume - a.volume || b.priceChange - a.priceChange; });
+    result.sort((a, b) => b.volume - a.volume || b.priceChange - a.priceChange);
     return result;
   }
 
   getBestOpeningPrice(): Stock[] {
-    let result = new Array<Stock>();
+    const result = new Array<Stock>();
     const days = 5;
 
-    for (let s of this.stocksFiltered) {
-      let n = this.stocks.indexOf(s); // index of current day
+    for (const s of this.stocksFiltered) {
+      const n = this.stocks.indexOf(s); // index of current day
       // order of stocks is descending -> get closing prices of next 5 items of current day
-      let A = this.stocks.slice(n + 1, n + (days + 1)).map(s => s.closeLast);
+      const A = this.stocks.slice(n + 1, n + (days + 1)).map(st => st.closeLast);
 
       // calculate sma and difference between opening price and sma
       if (A.length === days) {
-        let sma = A.reduce((a, b) => a + b) / days;
-        let priceChangePercentage = (s.open - sma) / s.open;
+        const sma = A.reduce((a, b) => a + b) / days;
+        const priceChangePercentage = (s.open - sma) / s.open;
         s.smaPriceChangePercentage = priceChangePercentage;
         result.push(s);
       }
     }
 
     // sort by price change percentage
-    return result.sort((a, b) => { return b.smaPriceChangePercentage - a.smaPriceChangePercentage });
+    return result.sort((a, b) => b.smaPriceChangePercentage - a.smaPriceChangePercentage);
   }
 
 }
