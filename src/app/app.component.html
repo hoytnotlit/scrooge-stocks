@@ -11,8 +11,8 @@
 <button (click)="handleDateRangeChange()">OK</button>
 
 <!--Results-->
-<app-stock></app-stock>
-
+<app-stock [stocks]="stocks" [stocksFiltered]="stocksFiltered"></app-stock>
+<!-- 
 <div class="row">
   How many days was the longest bullish (upward) trend within a given date range?
   {{longestUpwardDays}} days
@@ -35,4 +35,4 @@
     {{r.date | date}}
     {{r.smaPriceChangePercentage | percent}}
   </div>
-</div>
+</div> -->
